@@ -37,13 +37,13 @@ public class Automata {
         System.out.println("Introduce el numero de las funciones de transicion del Automata:");
         this.numeroTransiciones = sc.nextInt();
         this.transiciones = new transicionesAutomata[numeroTransiciones+1];
-        for (int i = 0; i < numeroTransiciones+1; i++)
+        for (int i = 0; i < numeroTransiciones; i++)
         {
             this.transiciones[i] = new transicionesAutomata();
         }
         
         // inicializar la clase cfg
-        this.gramatica  = new cfg(numeroEstados*(numeroTransiciones+1), longitudAlfabeto);
+        this.gramatica  = new cfg(numeroEstados*(numeroTransiciones), longitudAlfabeto, numeroEstados);
         // copiar el alfabeto de entrada al alfabeto de la GLC ya que es el mismo
         System.arraycopy(this.alfabeto, 0, gramatica.alfabeto, 0, longitudAlfabeto);
     }
@@ -114,79 +114,75 @@ public class Automata {
         String auxEstado;
         String auxTransicion;
         // Paso 1 creacion del estado S de la GLC y sus transiciones
-        gramatica.transiciones[0].estado = "S";
         gramatica.estadosGramatica.add("S");
-        gramatica.transiciones[0].numeroTransiciones = numeroEstados;
-        
-        
+        gramatica.numeroTransicionesS = numeroEstados;
+                
         for (int i = 0; i < numeroEstados; i++)
         {
             
             auxEstado = "[q0," + "#," + estados[i] + "]";
-            gramatica.transiciones[0].transiciones[i] = auxEstado;
+            gramatica.transicionesS[i] = auxEstado;
             gramatica.estadosGramatica.add(auxEstado);
         }
-       
-        for (int i = 1; i < numeroTransiciones+1; i++)
+        int indiceAux = 0;
+        for (int i = 0; i < numeroTransiciones; i++)
         {             
-            int indiceAux = 0;
-            if (i != 1)
-                indiceAux = 1;
-            if ( "$".equals(transiciones[i-1].entradaPila) )
+            if ( "$".equals(transiciones[i].entradaPila) )
             {
                 
                 //Paso 3 Transformacion de las transiciones con entrada pila '$'/vacia
                 // Creamos el nuevo estado 
-                auxEstado = "[" + transiciones[i-1].estadoActual + "," + transiciones[i-1].salidaPila +"," + transiciones[i-1].estadoResultante + "]";                
+                auxEstado = "[" + transiciones[i].estadoActual + "," + transiciones[i].salidaPila +"," + transiciones[i].estadoResultante + "]";                
                 if (!gramatica.estadosGramatica.contains(auxEstado))
                     gramatica.estadosGramatica.add(auxEstado); 
-                gramatica.transiciones[i].estado = auxEstado;
-                gramatica.transiciones[i].transiciones[0] = transiciones[i-1].entrada;
+                gramatica.transiciones[indiceAux].estado = auxEstado;
+                gramatica.transiciones[indiceAux].transiciones[0] = transiciones[i].entrada;
+                indiceAux++;
             }  else 
             {  
                //Paso 2 Transformacion del la transiciones de AP a GLC
                for (int j = 0; j < numeroEstados; j++)
                {
-                   auxEstado = "[" + transiciones[i-1].estadoActual + "," + transiciones[i-1].salidaPila + "," + estados[j] + "]";
+                   auxEstado = "[" + transiciones[i].estadoActual + "," + transiciones[i].salidaPila + "," + estados[j] + "]";
                    if (!gramatica.estadosGramatica.contains(auxEstado))
                         gramatica.estadosGramatica.add(auxEstado); 
-                   gramatica.transiciones[i+j+indiceAux].estado = auxEstado ;
+                   gramatica.transiciones[indiceAux].estado = auxEstado ;
                    
                    // Vector auxiliar
-                   int[] auxVector = new int [transiciones[i-1].entradaPila.length()+1];
+                   int[] auxVector = new int [transiciones[i].entradaPila.length()+1];
                    // inicializamos el vector auxiliar y igualamos a 0 cada uno de sus elementos, utilizamos el ultimo elemento del vector para saber si se ha llegado al fin fel recorrido
-                   for (int k = 0; k < transiciones[i-1].entradaPila.length(); k++)
+                   for (int k = 0; k < transiciones[i].entradaPila.length(); k++)
                    {
                        auxVector[k] = 0;
                    }
                    int aux = 0;
-                   while (auxVector[transiciones[i-1].entradaPila.length()-1] != 1)
+                   while (auxVector[transiciones[i].entradaPila.length()-1] != 1)
                    {
                        // ejecucion del paso2
-                       auxTransicion = transiciones[i-1].entrada;
-                       auxEstado = "[" + transiciones[i-1].estadoResultante + "," + transiciones[i-1].entradaPila.charAt(0) + ",";
+                       auxTransicion = transiciones[i].entrada;
+                       auxEstado = "[" + transiciones[i].estadoResultante + "," + transiciones[i].entradaPila.charAt(0) + ",";
                        
-                       for (int l = 0; l < transiciones[i-1].entradaPila.length()-1; l++)
+                       for (int l = 0; l < transiciones[i].entradaPila.length()-1; l++)
                        {
                            auxEstado =  auxEstado + estados[auxVector[l]] + "]"; 
                            if (!gramatica.estadosGramatica.contains(auxEstado))
                                 gramatica.estadosGramatica.add(auxEstado); 
                            auxTransicion = auxTransicion + auxEstado;
                            
-                           auxEstado = "[" + estados[auxVector[l]] + "," + transiciones[i-1].entradaPila.charAt(l+1) + ",";
+                           auxEstado = "[" + estados[auxVector[l]] + "," + transiciones[i].entradaPila.charAt(l+1) + ",";
                        }
                        
                        auxEstado = auxEstado + estados[j] + "]";
                        if (!gramatica.estadosGramatica.contains(auxEstado))
                             gramatica.estadosGramatica.add(auxEstado);
                        auxTransicion = auxTransicion + auxEstado;
-                       gramatica.transiciones[i+j+indiceAux].transiciones[aux] = auxTransicion;
+                       gramatica.transiciones[indiceAux].transiciones[aux] = auxTransicion;
                        aux++;
                       
                        
                        // actualizamos el vector auxiliar
                        auxVector[0]++; 
-                       for (int k = 1; k < transiciones[i-1].entradaPila.length()+1; k++)
+                       for (int k = 1; k < transiciones[i].entradaPila.length()+1; k++)
                        {
                            if (auxVector[k-1] == numeroEstados)
                            {
@@ -196,9 +192,10 @@ public class Automata {
                            
                        }
                    }
-                   gramatica.transiciones[i+j+indiceAux].numeroTransiciones = aux;
+                   gramatica.transiciones[indiceAux].numeroTransiciones = aux;
+                   indiceAux++; 
                }
-            }
+            }  
         }
     }
     

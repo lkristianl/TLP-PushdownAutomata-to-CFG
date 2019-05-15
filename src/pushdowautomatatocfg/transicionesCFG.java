@@ -13,7 +13,7 @@ public class transicionesCFG {
     
     public transicionesCFG ()
     {
-        this.transiciones = new String [20];
+        this.transiciones = new String [50];
     }
     // Estado no terminal
     public String estado = new String();

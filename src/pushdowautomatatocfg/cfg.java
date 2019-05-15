@@ -13,7 +13,7 @@ import java.util.ArrayList;
  */
 public class cfg {
     
-    public cfg (int numeroT, int longitudA)
+    public cfg (int numeroT, int longitudA, int numeroE)
     {
         this.numeroTransiciones = numeroT;
         this.transiciones = new transicionesCFG[numeroTransiciones];
@@ -24,6 +24,7 @@ public class cfg {
         
         this.longitudAlfabeto = longitudA;
         this.alfabeto = new char [longitudA];
+        this.transicionesS = new String[numeroE];
     }
     
     
@@ -38,6 +39,10 @@ public class cfg {
     // Transiciones de GLC
     public int numeroTransiciones;
     public transicionesCFG[] transiciones;
+    
+    // Transiciones del estado no terminal S
+    public int numeroTransicionesS;
+    public String[] transicionesS;
 
     @Override
     public String toString() {
@@ -56,14 +61,23 @@ public class cfg {
         }
         conjAlfabeto = conjAlfabeto + "}";
         
+        String conjTransicionesS ="TS: S->" + transicionesS[0];
+        for (int i = 1; i < this.numeroTransicionesS; i++)
+        {
+            conjTransicionesS = conjTransicionesS + "|" + transicionesS[i];
+        }
+        conjTransicionesS = conjTransicionesS + '\n';
+               
+        
         String conjTransiciones = "";
         for (int i = 0; i < this.numeroTransiciones; i++)
         {
-            conjTransiciones = conjTransiciones + "T" + i + ": " + this.transiciones[i].toString();
+            if(this.transiciones[i].estado.length() != 0)
+                conjTransiciones = conjTransiciones + "T" + i + ": " + this.transiciones[i].toString();
         }
         
         return "cfg{" + "estadosNoTerminales=" + conjEstadosGramatica + ", longitudAlfabeto=" + longitudAlfabeto + ", alfabeto=" + conjAlfabeto +
-                ", transiciones: \n" + conjTransiciones + '}';
+                ", transiciones: \n" + conjTransicionesS + conjTransiciones + '}';
     }
     
     
