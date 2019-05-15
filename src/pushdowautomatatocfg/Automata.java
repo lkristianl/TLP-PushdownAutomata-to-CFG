@@ -36,14 +36,14 @@ public class Automata {
         // inicializar transiciones del automata
         System.out.println("Introduce el numero de las funciones de transicion del Automata:");
         this.numeroTransiciones = sc.nextInt();
-        this.transiciones = new transicionesAutomata[numeroTransiciones];
-        for (int i = 0; i < numeroTransiciones; i++)
+        this.transiciones = new transicionesAutomata[numeroTransiciones+1];
+        for (int i = 0; i < numeroTransiciones+1; i++)
         {
             this.transiciones[i] = new transicionesAutomata();
         }
         
         // inicializar la clase cfg
-        this.gramatica  = new cfg(numeroEstados*numeroTransiciones, longitudAlfabeto);
+        this.gramatica  = new cfg(numeroEstados*(numeroTransiciones+1), longitudAlfabeto);
         // copiar el alfabeto de entrada al alfabeto de la GLC ya que es el mismo
         System.arraycopy(this.alfabeto, 0, gramatica.alfabeto, 0, longitudAlfabeto);
     }
@@ -127,18 +127,21 @@ public class Automata {
             gramatica.estadosGramatica.add(auxEstado);
         }
        
-        for (int i = 1; i < numeroTransiciones; i++)
+        for (int i = 1; i < numeroTransiciones+1; i++)
         {             
-            
+            int indiceAux = 0;
+            if (i != 1)
+                indiceAux = 1;
             if ( "$".equals(transiciones[i-1].entradaPila) )
             {
+                
                 //Paso 3 Transformacion de las transiciones con entrada pila '$'/vacia
                 // Creamos el nuevo estado 
                 auxEstado = "[" + transiciones[i-1].estadoActual + "," + transiciones[i-1].salidaPila +"," + transiciones[i-1].estadoResultante + "]";                
                 if (!gramatica.estadosGramatica.contains(auxEstado))
                     gramatica.estadosGramatica.add(auxEstado); 
                 gramatica.transiciones[i].estado = auxEstado;
-                gramatica.transiciones[i].transiciones[i-1] = transiciones[i-1].entrada ;
+                gramatica.transiciones[i].transiciones[0] = transiciones[i-1].entrada;
             }  else 
             {  
                //Paso 2 Transformacion del la transiciones de AP a GLC
@@ -147,7 +150,7 @@ public class Automata {
                    auxEstado = "[" + transiciones[i-1].estadoActual + "," + transiciones[i-1].salidaPila + "," + estados[j] + "]";
                    if (!gramatica.estadosGramatica.contains(auxEstado))
                         gramatica.estadosGramatica.add(auxEstado); 
-                   gramatica.transiciones[i].estado = auxEstado ;
+                   gramatica.transiciones[i+j+indiceAux].estado = auxEstado ;
                    
                    // Vector auxiliar
                    int[] auxVector = new int [transiciones[i-1].entradaPila.length()+1];
@@ -161,7 +164,7 @@ public class Automata {
                    {
                        // ejecucion del paso2
                        auxTransicion = transiciones[i-1].entrada;
-                       auxEstado = "[" + transiciones[i].estadoResultante + "," + transiciones[i].entradaPila.charAt(0) + ",";
+                       auxEstado = "[" + transiciones[i-1].estadoResultante + "," + transiciones[i-1].entradaPila.charAt(0) + ",";
                        
                        for (int l = 0; l < transiciones[i-1].entradaPila.length()-1; l++)
                        {
@@ -177,7 +180,7 @@ public class Automata {
                        if (!gramatica.estadosGramatica.contains(auxEstado))
                             gramatica.estadosGramatica.add(auxEstado);
                        auxTransicion = auxTransicion + auxEstado;
-                       gramatica.transiciones[i].transiciones[aux] = auxTransicion;
+                       gramatica.transiciones[i+j+indiceAux].transiciones[aux] = auxTransicion;
                        aux++;
                       
                        
@@ -193,7 +196,7 @@ public class Automata {
                            
                        }
                    }
-                   gramatica.transiciones[i].numeroTransiciones = aux;
+                   gramatica.transiciones[i+j+indiceAux].numeroTransiciones = aux;
                }
             }
         }
