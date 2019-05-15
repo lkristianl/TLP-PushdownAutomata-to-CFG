@@ -119,19 +119,21 @@ public class Automata {
                 
         for (int i = 0; i < numeroEstados; i++)
         {
-            
+            // Para cada estado  creamos una transicion [q0,#,q']
             auxEstado = "[q0," + "#," + estados[i] + "]";
             gramatica.transicionesS[i] = auxEstado;
             gramatica.estadosGramatica.add(auxEstado);
         }
+        // utilizamos este indice para saber donde intruducir cada tranformacion de una transicion
         int indiceAux = 0;
         for (int i = 0; i < numeroTransiciones; i++)
-        {             
+        {        
+            // Comprobamos si entra algun elemento en la pila, en caso de que sea $(vacia) entramos en el paso 3 y en otro caso en el paso 2
             if ( "$".equals(transiciones[i].entradaPila) )
             {
                 
                 //Paso 3 Transformacion de las transiciones con entrada pila '$'/vacia
-                // Creamos el nuevo estado 
+                // Creamos el nuevo estado y ponemos como transicion la entrada al automata
                 auxEstado = "[" + transiciones[i].estadoActual + "," + transiciones[i].salidaPila +"," + transiciones[i].estadoResultante + "]";                
                 if (!gramatica.estadosGramatica.contains(auxEstado))
                     gramatica.estadosGramatica.add(auxEstado); 
@@ -143,6 +145,7 @@ public class Automata {
                //Paso 2 Transformacion del la transiciones de AP a GLC
                for (int j = 0; j < numeroEstados; j++)
                {
+                   // creamos el nuevo estado no terminal
                    auxEstado = "[" + transiciones[i].estadoActual + "," + transiciones[i].salidaPila + "," + estados[j] + "]";
                    if (!gramatica.estadosGramatica.contains(auxEstado))
                         gramatica.estadosGramatica.add(auxEstado); 
@@ -155,13 +158,15 @@ public class Automata {
                    {
                        auxVector[k] = 0;
                    }
+                   // utilizamos este int auxiliar como indice para saber en cual traniscion estamos
                    int aux = 0;
+                   // si el ultimo elemento del vector es 0 este bucle se seguira ejecutando
                    while (auxVector[transiciones[i].entradaPila.length()-1] != 1)
                    {
                        // ejecucion del paso2
                        auxTransicion = transiciones[i].entrada;
                        auxEstado = "[" + transiciones[i].estadoResultante + "," + transiciones[i].entradaPila.charAt(0) + ",";
-                       
+                      
                        for (int l = 0; l < transiciones[i].entradaPila.length()-1; l++)
                        {
                            auxEstado =  auxEstado + estados[auxVector[l]] + "]"; 
@@ -180,7 +185,7 @@ public class Automata {
                        aux++;
                       
                        
-                       // actualizamos el vector auxiliar
+                       // actualizamos el vector auxiliar, si un elemento se iguala al numero de estados lo igualamos otra vez a 0 y subimos por 1 el valor del elemento con peso mas grande
                        auxVector[0]++; 
                        for (int k = 1; k < transiciones[i].entradaPila.length()+1; k++)
                        {
@@ -192,6 +197,7 @@ public class Automata {
                            
                        }
                    }
+                   // actualizamos el numero de transiciones que contiene el estado en cuestion de la gramatica
                    gramatica.transiciones[indiceAux].numeroTransiciones = aux;
                    indiceAux++; 
                }
