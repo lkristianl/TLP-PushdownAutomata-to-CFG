@@ -16,7 +16,7 @@ public class transicionesAutomata {
         System.out.println("Introduce estado actual del Automata: ");
         this.estadoActual = sc.next();
         System.out.println("Introduce la entrada que acepta el Automata: ");
-        this.entrada = sc.next().charAt(0);
+        this.entrada = sc.next();
         System.out.println("Introduce el elemento en la cima de la pila del Automata: ");
         this.salidaPila = sc.next().charAt(0);
         
@@ -32,7 +32,7 @@ public class transicionesAutomata {
     
     // entradas para la transicion
     public String estadoActual;
-    public char entrada;
+    public String entrada;
     public char salidaPila;
     
     // salidas de la transicion
@@ -54,11 +54,11 @@ public class transicionesAutomata {
         this.estadoActual = estadoActual;
     }
 
-    public char getEntrada() {
+    public String getEntrada() {
         return entrada;
     }
 
-    public void setEntrada(char entrada) {
+    public void setEntrada(String entrada) {
         this.entrada = entrada;
     }
 

@@ -18,6 +18,10 @@ public class PushdowAutomataToCFG {
         
         Automata AP = new Automata(); 
         System.out.println(AP.toString());
+        AP.transformAutomata();
+        System.out.println(AP.gramatica.toString());
+        
+        
     }
   
     /* para probar si el toString de cfg funciona correctamente

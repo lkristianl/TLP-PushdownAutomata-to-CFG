@@ -6,6 +6,7 @@
 package pushdowautomatatocfg;
 import java.io.*; 
 import java.util.*; 
+import java.util.ArrayList;
 
 /**
  *
@@ -40,6 +41,11 @@ public class Automata {
         {
             this.transiciones[i] = new transicionesAutomata();
         }
+        
+        // inicializar la clase cfg
+        this.gramatica  = new cfg(numeroEstados*numeroTransiciones, longitudAlfabeto);
+        // copiar el alfabeto de entrada al alfabeto de la GLC ya que es el mismo
+        System.arraycopy(this.alfabeto, 0, gramatica.alfabeto, 0, longitudAlfabeto);
     }
     
     //Scanner para leer las entradas
@@ -67,6 +73,12 @@ public class Automata {
     // funcion de transiciones
     public int numeroTransiciones;
     public transicionesAutomata[] transiciones;
+    
+    // GLC resultante
+    public cfg gramatica;
+    
+    
+    
 
     @Override
     public String toString() {
@@ -96,88 +108,100 @@ public class Automata {
                 + ", numeroTransiciones= " + numeroTransiciones + ", Transiciones:\n" + conjTransiciones + "}";
     }
 
+    // transformacion de Automata con pila
+    public void transformAutomata ()
+    {
+        String auxEstado;
+        String auxTransicion;
+        // Paso 1 creacion del estado S de la GLC y sus transiciones
+        gramatica.transiciones[0].estado = "S";
+        gramatica.estadosGramatica.add("S");
+        gramatica.transiciones[0].numeroTransiciones = numeroEstados;
+        
+        
+        for (int i = 0; i < numeroEstados; i++)
+        {
+            
+            auxEstado = "[q0," + "#," + estados[i] + "]";
+            gramatica.transiciones[0].transiciones[i] = auxEstado;
+            gramatica.estadosGramatica.add(auxEstado);
+        }
+       
+        for (int i = 1; i < numeroTransiciones; i++)
+        {             
+            
+            if ( "$".equals(transiciones[i-1].entradaPila) )
+            {
+                //Paso 3 Transformacion de las transiciones con entrada pila '$'/vacia
+                // Creamos el nuevo estado 
+                auxEstado = "[" + transiciones[i-1].estadoActual + "," + transiciones[i-1].salidaPila +"," + transiciones[i-1].estadoResultante + "]";                
+                if (!gramatica.estadosGramatica.contains(auxEstado))
+                    gramatica.estadosGramatica.add(auxEstado); 
+                gramatica.transiciones[i].estado = auxEstado;
+                gramatica.transiciones[i].transiciones[i-1] = transiciones[i-1].entrada ;
+            }  else 
+            {  
+               //Paso 2 Transformacion del la transiciones de AP a GLC
+               for (int j = 0; j < numeroEstados; j++)
+               {
+                   auxEstado = "[" + transiciones[i-1].estadoActual + "," + transiciones[i-1].salidaPila + "," + estados[j] + "]";
+                   if (!gramatica.estadosGramatica.contains(auxEstado))
+                        gramatica.estadosGramatica.add(auxEstado); 
+                   gramatica.transiciones[i].estado = auxEstado ;
+                   
+                   // Vector auxiliar
+                   int[] auxVector = new int [transiciones[i-1].entradaPila.length()+1];
+                   // inicializamos el vector auxiliar y igualamos a 0 cada uno de sus elementos, utilizamos el ultimo elemento del vector para saber si se ha llegado al fin fel recorrido
+                   for (int k = 0; k < transiciones[i-1].entradaPila.length(); k++)
+                   {
+                       auxVector[k] = 0;
+                   }
+                   int aux = 0;
+                   while (auxVector[transiciones[i-1].entradaPila.length()-1] != 1)
+                   {
+                       // ejecucion del paso2
+                       auxTransicion = transiciones[i-1].entrada;
+                       auxEstado = "[" + transiciones[i].estadoResultante + "," + transiciones[i].entradaPila.charAt(0) + ",";
+                       
+                       for (int l = 0; l < transiciones[i-1].entradaPila.length()-1; l++)
+                       {
+                           auxEstado =  auxEstado + estados[auxVector[l]] + "]"; 
+                           if (!gramatica.estadosGramatica.contains(auxEstado))
+                                gramatica.estadosGramatica.add(auxEstado); 
+                           auxTransicion = auxTransicion + auxEstado;
+                           
+                           auxEstado = "[" + estados[auxVector[l]] + "," + transiciones[i-1].entradaPila.charAt(l+1) + ",";
+                       }
+                       
+                       auxEstado = auxEstado + estados[j] + "]";
+                       if (!gramatica.estadosGramatica.contains(auxEstado))
+                            gramatica.estadosGramatica.add(auxEstado);
+                       auxTransicion = auxTransicion + auxEstado;
+                       gramatica.transiciones[i].transiciones[aux] = auxTransicion;
+                       aux++;
+                      
+                       
+                       // actualizamos el vector auxiliar
+                       auxVector[0]++; 
+                       for (int k = 1; k < transiciones[i-1].entradaPila.length()+1; k++)
+                       {
+                           if (auxVector[k-1] == numeroEstados)
+                           {
+                               auxVector[k-1] = 0;
+                               auxVector[k]++;
+                           }
+                           
+                       }
+                   }
+                   gramatica.transiciones[i].numeroTransiciones = aux;
+               }
+            }
+        }
+    }
     
     
-    // getters y setters
-    public int getNumeroEstados() {
-        return numeroEstados;
-    }
+    
 
-    public void setNumeroEstados(int numeroEstados) {
-        this.numeroEstados = numeroEstados;
-    }
-
-    public String[] getEstados() {
-        return estados;
-    }
-
-    public void setEstados(String[] estados) {
-        this.estados = estados;
-    }
-
-    public int getNumeroEstadosFinales() {
-        return numeroEstadosFinales;
-    }
-
-    public void setNumeroEstadosFinales(int numeroEstadosFinales) {
-        this.numeroEstadosFinales = numeroEstadosFinales;
-    }
-
-    public String[] getEstadosFinales() {
-        return estadosFinales;
-    }
-
-    public void setEstadosFinales(String[] estadosFinales) {
-        this.estadosFinales = estadosFinales;
-    }
-
-    public int getLongitudAlfabeto() {
-        return longitudAlfabeto;
-    }
-
-    public void setLongitudAlfabeto(int longitudAlfabeto) {
-        this.longitudAlfabeto = longitudAlfabeto;
-    }
-
-    public char[] getAlfabeto() {
-        return alfabeto;
-    }
-
-    public void setAlfabeto(char[] alfabeto) {
-        this.alfabeto = alfabeto;
-    }
-
-    public char getSimboloInicial() {
-        return simboloInicial;
-    }
-
-    public void setSimboloInicial(char simboloInicial) {
-        this.simboloInicial = simboloInicial;
-    }
-
-    public Stack<Character> getPila() {
-        return pila;
-    }
-
-    public void setPila(Stack<Character> pila) {
-        this.pila = pila;
-    }
-
-    public int getNumeroTransiciones() {
-        return numeroTransiciones;
-    }
-
-    public void setNumeroTransiciones(int numeroTransiciones) {
-        this.numeroTransiciones = numeroTransiciones;
-    }
-
-    public transicionesAutomata[] getTransiciones() {
-        return transiciones;
-    }
-
-    public void setTransiciones(transicionesAutomata[] transiciones) {
-        this.transiciones = transiciones;
-    }
     
     
     

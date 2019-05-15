@@ -12,6 +12,7 @@ package pushdowautomatatocfg;
 public class transicionsCFGTest {
         // Estado no terminal
     public char estado;
+            
     
     // Transiciones del estado no terminal
     public int numeroTransiciones = 2;
